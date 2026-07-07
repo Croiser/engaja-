@@ -47,7 +47,9 @@ services:
       VAPID_PRIVATE: ${VAPID_PRIVATE}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
     ports:
-      - "3333:3333"
+      # Só localhost — o Nginx Proxy Manager já rodando nesse VPS é quem expõe pra
+      # internet via api.engaja.dodile.com.br (mesmo padrão dos outros projetos no host).
+      - "127.0.0.1:3390:3333"
     depends_on:
       db:
         condition: service_healthy
