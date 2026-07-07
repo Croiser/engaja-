@@ -1,0 +1,38 @@
+# Deploy de produção. NÃO usar docker-compose.yml (esse é só o Postgres de dev local).
+# Provisiona API + Postgres no MESMO host via Docker. Preencher .env.prod antes de subir
+# (ver .env.prod.example). Nada aqui sobe sozinho — precisa de `docker compose up` manual
+# num VPS já existente.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: clube-boa-forma-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clube
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: clube_boa_forma
+      TZ: America/Sao_Paulo
+    volumes:
+      - clube_pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clube -d clube_boa_forma"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sem "ports" publicado no host de propósito: só a API (na mesma rede docker) acessa o banco.
+
+  api:
+    build: .
+    container_name: clube-boa-forma-api-prod
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    ports:
+      - "3333:3333"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  clube_pgdata_prod:
+    name: clube_boa_forma_pgdata_prod
