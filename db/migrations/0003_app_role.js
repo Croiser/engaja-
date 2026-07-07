@@ -11,7 +11,10 @@
 // =====================================================================
 
 const APP_ROLE = 'clube_app';
-const APP_PASS = 'clube_app'; // dev. Em produção: senha forte + trocar aqui e no APP_DATABASE_URL.
+// Em dev, senha fixa "clube_app" (documentada no .env.example). Em produção, definir
+// APP_ROLE_PASSWORD no ambiente com uma senha forte — precisa bater com a senha usada em
+// APP_DATABASE_URL (ver docker-compose.prod.yml).
+const APP_PASS = process.env.APP_ROLE_PASSWORD || 'clube_app';
 
 export async function up(knex) {
   await knex.raw(`
