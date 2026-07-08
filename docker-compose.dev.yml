@@ -1,0 +1,25 @@
+# Postgres DEDICADO do Clube Boa Forma+ (isolado dos outros projetos).
+# Porta host 3398 -> 5432 do container (evita conflito com salon-db/marco-db).
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: clube-boa-forma-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clube
+      POSTGRES_PASSWORD: clube
+      POSTGRES_DB: clube_boa_forma
+      TZ: America/Sao_Paulo
+    ports:
+      - "3398:5432"
+    volumes:
+      - clube_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clube -d clube_boa_forma"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  clube_pgdata:
+    name: clube_boa_forma_pgdata

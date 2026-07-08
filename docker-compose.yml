@@ -1,25 +1,61 @@
-# Postgres DEDICADO do Clube Boa Forma+ (isolado dos outros projetos).
-# Porta host 3398 -> 5432 do container (evita conflito com salon-db/marco-db).
+# Deploy de produção. Fica no nome canônico "docker-compose.yml" (raiz do repo) de
+# propósito: é o arquivo que a API da Hostinger resolve automaticamente ao receber só a
+# URL do repositório GitHub (VPS_createNewProjectV1). O compose de Postgres-only usado no
+# dev local da máquina do Douglas é o `docker-compose.dev.yml`. As variáveis ${...} aqui
+# vêm do parâmetro "environment" dessa chamada (não de um .env.prod local) — ver
+# deploy/README.md.
 services:
   db:
     image: postgres:16-alpine
-    container_name: clube-boa-forma-db
+    container_name: clube-boa-forma-db-prod
     restart: unless-stopped
     environment:
       POSTGRES_USER: clube
-      POSTGRES_PASSWORD: clube
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: clube_boa_forma
       TZ: America/Sao_Paulo
-    ports:
-      - "3398:5432"
     volumes:
-      - clube_pgdata:/var/lib/postgresql/data
+      - clube_pgdata_prod:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U clube -d clube_boa_forma"]
       interval: 5s
       timeout: 5s
       retries: 10
+    # Sem "ports" publicado no host de propósito: só a API (na mesma rede docker) acessa o banco.
+
+  api:
+    build: .
+    container_name: clube-boa-forma-api-prod
+    restart: unless-stopped
+    # Roda as migrations (inclui a criação da role clube_app, ver 0003_app_role.js) antes
+    # de subir o server — sem isso, não há como executar comando avulso no container.
+    command: sh -c "npx knex migrate:latest && node src/server.js"
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      DATABASE_URL: postgres://clube:${POSTGRES_PASSWORD}@db:5432/clube_boa_forma
+      APP_DATABASE_URL: postgres://clube_app:${APP_ROLE_PASSWORD}@db:5432/clube_boa_forma
+      APP_ROLE_PASSWORD: ${APP_ROLE_PASSWORD}
+      DB_TIMEZONE: America/Sao_Paulo
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES: 1d
+      JWT_EXPIRES_LONGO: 30d
+      QR_SECRET: ${QR_SECRET}
+      QR_TTL_SEGUNDOS: 90
+      BENEFICIO_TTL_SEGUNDOS: 600
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      TRUST_PROXY: 1
+      VAPID_PUBLIC: ${VAPID_PUBLIC}
+      VAPID_PRIVATE: ${VAPID_PRIVATE}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+    ports:
+      # Só localhost — o Nginx Proxy Manager já rodando nesse VPS é quem expõe pra
+      # internet via api.engaja.dodile.com.br (mesmo padrão dos outros projetos no host).
+      - "127.0.0.1:3390:3333"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  clube_pgdata:
-    name: clube_boa_forma_pgdata
+  clube_pgdata_prod:
+    name: clube_boa_forma_pgdata_prod
