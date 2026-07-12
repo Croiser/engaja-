@@ -62,6 +62,17 @@ services:
       db:
         condition: service_healthy
 
+  # Frontend (PWA) estático. O dist/ NÃO vem do git — é buildado na máquina do Douglas
+  # (vite build) e enviado por scp pra ./web/dist. Sem porta no host: o Nginx Proxy
+  # Manager (conectado à rede engaja_default) alcança pelo nome engaja-web.
+  web:
+    image: nginx:alpine
+    container_name: engaja-web
+    restart: unless-stopped
+    volumes:
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web/dist:/usr/share/nginx/html:ro
+
 volumes:
   clube_pgdata_prod:
     name: clube_boa_forma_pgdata_prod
