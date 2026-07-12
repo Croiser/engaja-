@@ -26,4 +26,6 @@ export const Erros = {
   limiteBeneficio: () =>
     new AppError('LIMITE_BENEFICIO', 'Você já usou este benefício no período permitido.', 422),
   arquivoInvalido: (motivo = 'Arquivo inválido.') => new AppError('ARQUIVO_INVALIDO', motivo, 422),
+  limiteAlunos: (limite) =>
+    new AppError('LIMITE_ALUNOS', `Sua academia atingiu o limite de ${limite} alunos do plano atual. Fale com o suporte para fazer upgrade.`, 422),
 };

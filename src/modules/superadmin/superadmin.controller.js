@@ -3,7 +3,14 @@ import { autenticar, exigirSetupCompleto } from '../../middlewares/auth.js';
 import { soSuperadmin } from '../../middlewares/roles.js';
 import { comSistemaHandler } from '../../middlewares/tenant.js';
 import { validarBody } from '../../middlewares/validate.js';
-import { criarAcademiaSchema, atualizarAcademiaSchema } from './superadmin.schema.js';
+import {
+  criarAcademiaSchema,
+  atualizarAcademiaSchema,
+  criarPlanoSchema,
+  atualizarPlanoSchema,
+  definirAssinaturaSchema,
+  registrarPagamentoSchema,
+} from './superadmin.schema.js';
 import * as service from './superadmin.service.js';
 
 // Painel do dono da plataforma (tipo='superadmin'). Cross-tenant de propósito — usa
@@ -38,4 +45,37 @@ superadminRouter.post(
     await service.reativarAcademia(req.db, req.usuario, req.params.id, req);
     res.json({ ok: true });
   }),
+);
+
+// ---- Planos (catálogo da plataforma) ----
+superadminRouter.get('/planos', comSistemaHandler(async (req, res) => res.json(await service.listarPlanos(req.db))));
+superadminRouter.post(
+  '/planos',
+  validarBody(criarPlanoSchema),
+  comSistemaHandler(async (req, res) => res.status(201).json(await service.criarPlano(req.db, req.usuario, req.body, req))),
+);
+superadminRouter.put(
+  '/planos/:id',
+  validarBody(atualizarPlanoSchema),
+  comSistemaHandler(async (req, res) => res.json(await service.atualizarPlano(req.db, req.usuario, req.params.id, req.body, req))),
+);
+superadminRouter.delete(
+  '/planos/:id',
+  comSistemaHandler(async (req, res) => res.json(await service.removerPlano(req.db, req.usuario, req.params.id, req))),
+);
+
+// ---- Assinatura + pagamentos da academia ----
+superadminRouter.put(
+  '/academias/:id/assinatura',
+  validarBody(definirAssinaturaSchema),
+  comSistemaHandler(async (req, res) => res.json(await service.definirAssinatura(req.db, req.usuario, req.params.id, req.body, req))),
+);
+superadminRouter.get(
+  '/academias/:id/pagamentos',
+  comSistemaHandler(async (req, res) => res.json(await service.listarPagamentos(req.db, req.params.id))),
+);
+superadminRouter.post(
+  '/academias/:id/pagamentos',
+  validarBody(registrarPagamentoSchema),
+  comSistemaHandler(async (req, res) => res.status(201).json(await service.registrarPagamento(req.db, req.usuario, req.params.id, req.body, req))),
 );

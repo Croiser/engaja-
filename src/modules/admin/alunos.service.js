@@ -36,6 +36,18 @@ export async function obter(dbh, id) {
 
 // Cria aluno (senha padrão "123"). Se `indicado_por`, credita +500 ao indicador + notifica.
 export async function criar(dbh, ator, dados, req) {
+  // Enforcement do plano SaaS: academia com assinatura cujo plano tem teto de alunos
+  // não passa do limite (RLS já restringe a consulta à academia do ator). Academia sem
+  // assinatura não é bloqueada — cadastro/venda assistida define o plano depois.
+  const assinatura = await dbh('assinaturas as s')
+    .join('planos as p', 'p.id', 's.plano_id')
+    .whereNot('s.status', 'cancelada')
+    .first('p.limite_alunos');
+  if (assinatura?.limite_alunos != null) {
+    const [{ ativos }] = await dbh('usuarios').where({ tipo: 'aluno', ativo: true }).count({ ativos: '*' });
+    if (Number(ativos) >= assinatura.limite_alunos) throw Erros.limiteAlunos(assinatura.limite_alunos);
+  }
+
   const { indicado_por, ...campos } = dados;
   const senhaHash = await bcrypt.hash('123', 10);
   const [aluno] = await dbh('usuarios')
