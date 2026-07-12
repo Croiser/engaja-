@@ -34,8 +34,12 @@ export function listarAcademias(dbh) {
     .count('u.id as total_alunos');
 }
 
+// Nunca devolver `qr_secret` — segredo que assina os QR codes da carteirinha, sem
+// necessidade de aparecer em nenhuma resposta de API (nem pro superadmin).
+const COLUNAS_PUBLICAS = ['id', 'nome', 'slug', 'dominio', 'logo_url', 'cor_primaria', 'cor_secundaria', 'ativo', 'criado_em'];
+
 export async function obterAcademia(dbh, id) {
-  const academia = await dbh('academias').where({ id }).first();
+  const academia = await dbh('academias').where({ id }).first(COLUNAS_PUBLICAS);
   if (!academia) throw Erros.naoEncontrado('Academia');
   const [{ total_alunos }] = await dbh('usuarios')
     .where({ academia_id: id, tipo: 'aluno', ativo: true })
@@ -60,7 +64,7 @@ export async function criarAcademia(dbh, ator, dados, req) {
       cor_primaria: camposAcademia.cor_primaria || '#0A0A0A',
       cor_secundaria: camposAcademia.cor_secundaria || '#F5B301',
     })
-    .returning('*');
+    .returning(COLUNAS_PUBLICAS);
 
   const senhaHash = await bcrypt.hash('123', 10);
   const [gerente] = await dbh('usuarios')
@@ -87,7 +91,7 @@ export async function criarAcademia(dbh, ator, dados, req) {
 }
 
 export async function atualizarAcademia(dbh, ator, id, dados, req) {
-  const [academia] = await dbh('academias').where({ id }).update(dados).returning('*');
+  const [academia] = await dbh('academias').where({ id }).update(dados).returning(COLUNAS_PUBLICAS);
   if (!academia) throw Erros.naoEncontrado('Academia');
   await registrar(dbh, {
     academiaId: id,

@@ -33,6 +33,13 @@ const schema = z.object({
   VAPID_PUBLIC: z.string().optional(),
   VAPID_PRIVATE: z.string().optional(),
   VAPID_SUBJECT: z.string().default('mailto:contato@boaformafoz.com.br'),
+
+  // Onde os uploads (logo da academia) ficam salvos em disco, e a URL pública
+  // correspondente pra montar o logo_url salvo no banco. Em produção, UPLOAD_DIR precisa
+  // ser um volume Docker persistente (ver docker-compose.yml) — sem isso, os uploads
+  // somem a cada deploy.
+  UPLOAD_DIR: z.string().default('uploads'),
+  UPLOAD_PUBLIC_URL: z.string().default('http://localhost:3333/uploads'),
 });
 
 const parsed = schema.safeParse(process.env);

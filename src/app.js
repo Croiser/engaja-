@@ -15,6 +15,7 @@ import { lojistaRouter } from './modules/parceiros/lojista.controller.js';
 import { vitrineRouter, adminPremiosRouter } from './modules/premios/premios.controller.js';
 import { adminAlunosRouter } from './modules/admin/alunos.controller.js';
 import { adminSelosRouter } from './modules/selos/selos.controller.js';
+import { adminMarcaRouter } from './modules/admin/marca.controller.js';
 import { dashboardRouter } from './modules/admin/dashboard.controller.js';
 import { superadminRouter } from './modules/superadmin/superadmin.controller.js';
 
@@ -35,6 +36,10 @@ app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 // Chave pública VAPID — o front precisa dela para assinar o Web Push (pode ser pública).
 app.get('/config/vapid-public', (_req, res) => res.json({ chave: env.VAPID_PUBLIC ?? null }));
 
+// Uploads (logo da academia) — arquivo público por natureza (a logo aparece pro aluno
+// sem login). UPLOAD_DIR precisa ser um volume persistente em produção (ver docker-compose.yml).
+app.use('/uploads', express.static(env.UPLOAD_DIR));
+
 // ---- Rotas ----
 app.use('/auth', authRouter);
 // Rotas compartilhadas (qualquer papel) ANTES do /me do aluno — prefixos mais
@@ -51,6 +56,7 @@ app.use('/admin/leads', leadsRouter); // CRM de leads / indicações (recepção
 app.use('/admin/parceiros', adminParceirosRouter); // CRUD parceiros + categorias (gerente)
 app.use('/admin/premios', adminPremiosRouter); // CRUD prêmios (gerente) + baixa de voucher (recepção)
 app.use('/admin/selos', adminSelosRouter); // CRUD selos/níveis (gerente)
+app.use('/admin/academia', adminMarcaRouter); // autoatendimento: gerente edita a própria marca
 app.use('/admin/alunos', adminAlunosRouter); // CRUD alunos + cancelar (zera saldo) + ajuste de pontos
 app.use('/admin', dashboardRouter); // dashboard, relatórios, auditoria (gerente)
 app.use('/superadmin', superadminRouter); // dono da plataforma: CRUD academias, cross-tenant

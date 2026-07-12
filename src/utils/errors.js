@@ -25,4 +25,5 @@ export const Erros = {
     new AppError('CODIGO_INVALIDO', 'Código inválido ou expirado.', 422),
   limiteBeneficio: () =>
     new AppError('LIMITE_BENEFICIO', 'Você já usou este benefício no período permitido.', 422),
+  arquivoInvalido: (motivo = 'Arquivo inválido.') => new AppError('ARQUIVO_INVALIDO', motivo, 422),
 };

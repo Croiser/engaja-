@@ -48,6 +48,12 @@ services:
       VAPID_PUBLIC: ${VAPID_PUBLIC}
       VAPID_PRIVATE: ${VAPID_PRIVATE}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
+      UPLOAD_DIR: /app/uploads
+      UPLOAD_PUBLIC_URL: ${UPLOAD_PUBLIC_URL}
+    volumes:
+      # Persistente: sem isso, toda logo enviada some no próximo `docker compose up --build`
+      # (a imagem é recriada do zero a cada deploy).
+      - clube_uploads_prod:/app/uploads
     ports:
       # Só localhost — o Nginx Proxy Manager já rodando nesse VPS é quem expõe pra
       # internet via api.engaja.dodile.com.br (mesmo padrão dos outros projetos no host).
@@ -59,3 +65,5 @@ services:
 volumes:
   clube_pgdata_prod:
     name: clube_boa_forma_pgdata_prod
+  clube_uploads_prod:
+    name: clube_boa_forma_uploads_prod
