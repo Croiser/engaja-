@@ -18,6 +18,7 @@ import { adminSelosRouter } from './modules/selos/selos.controller.js';
 import { adminMarcaRouter } from './modules/admin/marca.controller.js';
 import { dashboardRouter } from './modules/admin/dashboard.controller.js';
 import { superadminRouter } from './modules/superadmin/superadmin.controller.js';
+import { webhookRouter } from './modules/superadmin/webhook.controller.js';
 
 export const app = express();
 
@@ -60,6 +61,7 @@ app.use('/admin/academia', adminMarcaRouter); // autoatendimento: gerente edita 
 app.use('/admin/alunos', adminAlunosRouter); // CRUD alunos + cancelar (zera saldo) + ajuste de pontos
 app.use('/admin', dashboardRouter); // dashboard, relatórios, auditoria (gerente)
 app.use('/superadmin', superadminRouter); // dono da plataforma: CRUD academias, cross-tenant
+app.use('/webhooks', webhookRouter); // callbacks do Asaas (público, protegido por token)
 
 // 404 padrão.
 app.use((_req, res) => res.status(404).json({ erro: { codigo: 'ROTA_NAO_ENCONTRADA' } }));

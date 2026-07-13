@@ -1,12 +1,14 @@
 // Registro dos jobs cron. Chamado no boot (server.js) fora do ambiente de teste.
 import cron from 'node-cron';
 import { ledger, selos } from '../engine/index.js';
+import { comSistema } from '../config/db.js';
 import { validarCheckinsPendentes } from '../engine/checkin.js';
 import {
   resetarStreaksQuebrados,
   creditarAniversariantes,
   notificarVencimentos,
 } from '../engine/jobs_gamificacao.js';
+import { suspenderInadimplentesVencidos } from '../modules/superadmin/webhook.service.js';
 
 // Envolve um job para logar duração/erros sem derrubar o processo.
 function protegido(nome, fn) {
@@ -34,5 +36,8 @@ export function registrarJobs() {
   // Diário 06:00 — notifica alunos com clube vencendo em 7 e 3 dias (mural + push).
   cron.schedule('0 6 * * *', protegido('notif-vencimento', notificarVencimentos));
 
-  console.log('⏰ jobs cron registrados (checkins, aniversarios, streaks, vencimento)');
+  // Diário 03:00 — suspende academias inadimplentes que passaram da carência (Asaas).
+  cron.schedule('0 3 * * *', protegido('suspende-inadimplentes', () => comSistema(suspenderInadimplentesVencidos)));
+
+  console.log('⏰ jobs cron registrados (checkins, aniversarios, streaks, vencimento, inadimplentes)');
 }

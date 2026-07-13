@@ -10,8 +10,10 @@ import {
   atualizarPlanoSchema,
   definirAssinaturaSchema,
   registrarPagamentoSchema,
+  ativarCobrancaSchema,
 } from './superadmin.schema.js';
 import * as service from './superadmin.service.js';
+import * as cobranca from './cobranca.service.js';
 
 // Painel do dono da plataforma (tipo='superadmin'). Cross-tenant de propósito — usa
 // comSistemaHandler (bypass do RLS), nunca comTenantHandler. Montado em /superadmin.
@@ -78,4 +80,11 @@ superadminRouter.post(
   '/academias/:id/pagamentos',
   validarBody(registrarPagamentoSchema),
   comSistemaHandler(async (req, res) => res.status(201).json(await service.registrarPagamento(req.db, req.usuario, req.params.id, req.body, req))),
+);
+
+// ---- Ativar cobrança recorrente no Asaas (Fase 1) ----
+superadminRouter.post(
+  '/academias/:id/cobranca/ativar',
+  validarBody(ativarCobrancaSchema),
+  comSistemaHandler(async (req, res) => res.json(await cobranca.ativarCobranca(req.db, req.usuario, req.params.id, req.body, req))),
 );

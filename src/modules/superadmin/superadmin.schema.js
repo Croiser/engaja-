@@ -41,6 +41,15 @@ export const definirAssinaturaSchema = z.object({
   observacoes: z.string().max(2000).nullable().optional(),
 });
 
+// ---- Ativar cobrança recorrente no Asaas ----
+export const ativarCobrancaSchema = z.object({
+  // Dados do pagador no Asaas. CPF/CNPJ é praticamente obrigatório pra emitir cobrança.
+  cpf_cnpj: z.string().min(11).max(18),
+  nome_cobranca: z.string().min(2).max(150).optional(),
+  email: z.string().email().optional(),
+  telefone: z.string().max(20).optional(),
+});
+
 // ---- Pagamento manual (Pix/link — até a integração Asaas) ----
 export const registrarPagamentoSchema = z.object({
   valor_centavos: z.number().int().min(1).max(100_000_000),

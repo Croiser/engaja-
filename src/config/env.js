@@ -46,6 +46,10 @@ const schema = z.object({
   // (nunca a de produção — cobranças lá são reais).
   ASAAS_API_KEY: z.string().optional(),
   ASAAS_BASE_URL: z.string().default('https://api.asaas.com/v3'),
+  // Token compartilhado que o Asaas envia no header do webhook (config no painel Asaas).
+  // Protege o endpoint público de webhook contra chamadas forjadas. Sem ele, o webhook
+  // recusa tudo (fail-closed).
+  ASAAS_WEBHOOK_TOKEN: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

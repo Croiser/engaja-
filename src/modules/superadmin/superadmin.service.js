@@ -53,6 +53,7 @@ export async function obterAcademia(dbh, id) {
     .where('s.academia_id', id)
     .first(
       's.id', 's.plano_id', 's.status', 's.inicio', 's.dia_vencimento', 's.pago_ate', 's.observacoes',
+      's.asaas_subscription_id', 's.inadimplente_desde',
       'p.nome as plano_nome', 'p.preco_mensal_centavos', 'p.preco_implantacao_centavos', 'p.limite_alunos',
     );
   return {
