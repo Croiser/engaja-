@@ -50,6 +50,8 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT}
       UPLOAD_DIR: /app/uploads
       UPLOAD_PUBLIC_URL: ${UPLOAD_PUBLIC_URL}
+      ASAAS_API_KEY: ${ASAAS_API_KEY}
+      ASAAS_BASE_URL: ${ASAAS_BASE_URL:-https://api.asaas.com/v3}
     volumes:
       # Persistente: sem isso, toda logo enviada some no próximo `docker compose up --build`
       # (a imagem é recriada do zero a cada deploy).

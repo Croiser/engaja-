@@ -40,6 +40,12 @@ const schema = z.object({
   // somem a cada deploy.
   UPLOAD_DIR: z.string().default('uploads'),
   UPLOAD_PUBLIC_URL: z.string().default('http://localhost:3333/uploads'),
+
+  // Asaas (Fase 1 — cobrança). Sem a chave, a integração fica desligada (cobrança manual
+  // via painel continua funcionando). Em dev/teste usar a chave e URL do SANDBOX
+  // (nunca a de produção — cobranças lá são reais).
+  ASAAS_API_KEY: z.string().optional(),
+  ASAAS_BASE_URL: z.string().default('https://api.asaas.com/v3'),
 });
 
 const parsed = schema.safeParse(process.env);
